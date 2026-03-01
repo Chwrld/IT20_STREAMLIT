@@ -1,0 +1,26 @@
+DestinationID,Name,State,Type,Popularity,BestTimeToVisit
+1,Goa,Goa,Beach,8.78,Oct-Mar
+2,Andaman & Nicobar,Andaman,Island,8.98,Nov-Feb
+3,Gokarna,Karnataka,Beach,7.95,Oct-Mar
+4,Pondicherry,Pondicherry,Coastal City,8.85,Apr-Jun
+5,Varkala,Kerala,Cliff Beach,7.67,Sep-Mar
+6,Jaipur,Rajasthan,Historical City,7.56,Oct-Mar
+7,Delhi,Delhi,Metropolis,7.94,Apr-Jun
+8,Agra,Uttar Pradesh,Historical City,8.7,Apr-Jun
+9,Hampi,Karnataka,Ancient Ruins,7.9,Apr-Jun
+10,Mysore,Karnataka,Historical City,8.34,Sep-Mar
+11,Manali,Himachal Pradesh,Mountains,8.68,Oct-Mar
+12,Rishikesh,Uttarakhand,Mountain/River,9.02,Nov-Feb
+13,Munnar,Kerala,Hill Station,8.9,Nov-Mar
+14,Leh Ladakh,Jammu & Kashmir,High Desert,8.06,Nov-Feb
+15,Jim Corbett,Uttarakhand,National Park,9.41,Nov-Mar
+16,Kolkata,West Bengal,Metropolis,7.7,Sep-Mar
+17,Amritsar,Punjab,Historical City,7.69,Nov-Mar
+18,Lucknow,Uttar Pradesh,Historical City,8.71,Oct-Mar
+19,Hyderabad,Telangana,Metropolis,8.96,Apr-Jun
+20,Kochi,Kerala,Coastal City,7.75,Sep-Mar
+21,Varanasi,Uttar Pradesh,Holy City,7.66,Nov-Mar
+22,Dharamshala,Himachal Pradesh,Mountain Monasteries,9.16,Apr-Jun
+23,Tirupati,Andhra Pradesh,Temple Town,9.27,Nov-Mar
+24,Auroville,Tamil Nadu,Spiritual Township,8.65,Oct-Mar
+25,Bodh Gaya,Bihar,Temple Town,7.59,Nov-Feb
