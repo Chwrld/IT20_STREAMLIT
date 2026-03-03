@@ -12,9 +12,9 @@ plt.style.use('seaborn-v0_8-whitegrid')
 sns.set_palette('Set2')
 
 # Load raw datasets
-df_users = kagglehub.load_dataset(KaggleDatasetAdapter.PANDAS, "amanmehra23/travel-recommendation-dataset", "Final_Updated_Expanded_Users.csv")
-df_history = kagglehub.load_dataset(KaggleDatasetAdapter.PANDAS, "amanmehra23/travel-recommendation-dataset", "Final_Updated_Expanded_UserHistory.csv")
-df_destinations = kagglehub.load_dataset(KaggleDatasetAdapter.PANDAS, "amanmehra23/travel-recommendation-dataset", "Expanded_Destinations.csv")
+df_users = pd.read_csv("../dataset/Final_Updated_Expanded_Users.csv")
+df_history = pd.read_csv("../dataset/Final_Updated_Expanded_UserHistory.csv")
+df_destinations = pd.read_csv("../dataset/Expanded_Destinations.csv")
 
 print("✅ Datasets loaded successfully")
 print(f"   Users:        {df_users.shape}")
@@ -165,11 +165,10 @@ df['Gender'].value_counts().plot(kind='pie', ax=axes[0,0], autopct='%1.1f%%', st
 axes[0,0].set_title('Gender Distribution', fontsize=13, fontweight='bold')
 axes[0,0].set_ylabel('')
 
-# Preferences
-pref_counts = df['Preferences'].value_counts()
-pref_counts.plot(kind='barh', ax=axes[0,1], color=sns.color_palette('viridis', len(pref_counts)))
-axes[0,1].set_title('Travel Preferences', fontsize=13, fontweight='bold')
-axes[0,1].set_xlabel('Count')
+# Budget
+df['Budget'].value_counts().plot(kind='pie', ax=axes[0,1], autopct='%1.1f%%', startangle=90, colors=['#ff9999','#66b3ff','#99ff99'])
+axes[0,1].set_title('Travel Budget', fontsize=13, fontweight='bold')
+axes[0,1].set_ylabel('')
 
 # NumberOfAdults
 df['NumberOfAdults'].value_counts().sort_index().plot(kind='bar', ax=axes[0,2], color='steelblue', edgecolor='black')
@@ -204,10 +203,10 @@ ct_gender = pd.crosstab(df['Gender'], df['DestinationName'], normalize='index')
 sns.heatmap(ct_gender, annot=True, fmt='.2f', cmap='YlOrRd', ax=axes[0,0])
 axes[0,0].set_title('P(Destination | Gender)', fontsize=13, fontweight='bold')
 
-# Preferences vs Destination
-ct_pref = pd.crosstab(df['Preferences'], df['DestinationName'], normalize='index')
-sns.heatmap(ct_pref, annot=True, fmt='.2f', cmap='YlOrRd', ax=axes[0,1])
-axes[0,1].set_title('P(Destination | Preferences)', fontsize=13, fontweight='bold')
+# Budget vs Destination
+ct_budget = pd.crosstab(df['Budget'], df['DestinationName'], normalize='index')
+sns.heatmap(ct_budget, annot=False, cmap='YlOrRd', ax=axes[0,1])
+axes[0,1].set_title('P(Destination | Budget)', fontsize=13, fontweight='bold')
 
 # NumberOfAdults vs Destination
 ct_adults = pd.crosstab(df['NumberOfAdults'], df['DestinationName'], normalize='index')
@@ -260,25 +259,22 @@ print(f"Records after ExperienceRating >= 4 filter: {len(df_clean)} (from {len(d
 print(f"Records removed: {len(df) - len(df_clean)} ({(len(df) - len(df_clean))/len(df)*100:.1f}%)")
 print()
 
-# 2. Feature Engineering
-# NOTE: We do NOT create Total_Travelers = Adults + Children
-# because it's a perfect linear combination of features already in X.
-# Including it causes multicollinearity that affects different models
-# differently, making comparison unreliable.
+# 2. Feature Engineering — Extract Month and Expand Preferences
+print("🔧 Performing feature engineering...")
 
-# 3. Clean up Compound Preferences (trim whitespace for consistency)
-df_clean['Preferences'] = df_clean['Preferences'].apply(lambda x: ', '.join([p.strip() for p in x.split(',')]))
+# Extract TravelMonth from VisitDate
+df['VisitDate'] = pd.to_datetime(df['VisitDate'])
+df['TravelMonth'] = df['VisitDate'].dt.month
 
-all_pref_combos = sorted(df_clean['Preferences'].unique())
-print(f"Dataset has {len(all_pref_combos)} distinct user preference profiles:")
-for combo in all_pref_combos:
-    print(f"   - '{combo}' ({(df_clean['Preferences'] == combo).sum()} users)")
-print()
+# Expand semicolon-separated Preferences into binary columns (0/1)
+prefs_list = ['Relaxation', 'Adventure', 'Culture', 'Spiritual']
+for pref in prefs_list:
+    df[f'Pref_{pref}'] = df['Preferences'].apply(lambda x: 1 if pref in str(x) else 0)
 
-# 4. Drop temporal noise (per paper.txt: VisitDate is not critical)
-# VisitDate is already excluded from our feature selection
+print("✅ Feature engineering complete.")
+print(f"   New columns: {['TravelMonth'] + [f'Pref_{p}' for p in prefs_list]}")
 
-# 5. Target Variable — Label Encode DestinationName
+# 3. Target Variable — Label Encode DestinationName
 le_dest = LabelEncoder()
 df_clean['Target_Destination'] = le_dest.fit_transform(df_clean['DestinationName'])
 n_classes = len(le_dest.classes_)
@@ -303,12 +299,12 @@ axes[0].set_ylabel('Count')
 for i, v in enumerate(df_clean['DestinationName'].value_counts().values):
     axes[0].text(i, v + 1, str(v), ha='center', fontweight='bold')
 
-# Preference profile distribution
-df_clean['Preferences'].value_counts().plot(
-    kind='barh', ax=axes[1], color='teal', edgecolor='black'
+# Age distribution
+df_clean['Age'].plot(
+    kind='hist', bins=20, ax=axes[1], color='teal', edgecolor='black'
 )
-axes[1].set_title('User Preference Profiles', fontsize=14, fontweight='bold')
-axes[1].set_xlabel('Count')
+axes[1].set_title('Age Distribution of Users', fontsize=14, fontweight='bold')
+axes[1].set_xlabel('Age')
 
 plt.tight_layout()
 plt.show()
@@ -324,8 +320,8 @@ plt.show()
 # EXCLUDED (destination-level attributes = data leakage):
 #   - State, Type, BestTimeToVisit, Popularity
 
-numeric_features = ['NumberOfAdults', 'NumberOfChildren']
-categorical_features = ['Gender', 'Preferences']
+numeric_features = ['Age', 'NumberOfAdults', 'NumberOfChildren', 'TravelMonth']
+categorical_features = ['Gender', 'Budget', 'Pref_Relaxation', 'Pref_Adventure', 'Pref_Culture', 'Pref_Spiritual']
 
 features = numeric_features + categorical_features
 X = df_clean[features].copy()
@@ -1031,6 +1027,23 @@ while True:
 print(f"   ✅ Gender: {user_gender}")
 print()
 
+# --- NEW: Budget Input ---
+budget_options = ["Low", "Medium", "High"]
+print("Select your Budget:")
+for i, b in enumerate(budget_options, 1):
+    print(f"   [{i}] {b}")
+while True:
+    try:
+        b_choice = int(input("Enter choice (number): "))
+        if 1 <= b_choice <= len(budget_options):
+            user_budget = budget_options[b_choice - 1]
+            break
+    except ValueError:
+        pass
+    print("   ⚠️  Invalid choice, try again.")
+print(f"   ✅ Budget: {user_budget}")
+print()
+
 # --- 3. Number of Adults ---
 while True:
     try:
@@ -1055,30 +1068,56 @@ while True:
 print(f"   ✅ Children: {user_children}")
 print()
 
-# --- 5. Travel Preferences (pick a profile) ---
-print("Select your travel preference profile:")
-for i, combo in enumerate(all_pref_combos, 1):
-    print(f"   [{i}] {combo}")
-print()
+# --- NEW: Age Input ---
 while True:
     try:
-        p_choice = int(input("Enter choice (number): "))
-        if 1 <= p_choice <= len(all_pref_combos):
-            user_pref = all_pref_combos[p_choice - 1]
+        user_age = int(input("Age (18-100): "))
+        if 18 <= user_age <= 100:
             break
     except ValueError:
         pass
-    print("   ⚠️  Invalid choice, try again.")
-print(f"   ✅ Preferences: {user_pref}")
+    print("   ⚠️  Please enter a valid age.")
+print(f"   ✅ Age: {user_age}")
 print()
 
-# --- 6. Build input DataFrame (must match training columns exactly) ---
+# --- NEW: Travel Month Input ---
+while True:
+    try:
+        user_month = int(input("Travel Month (1-12): "))
+        if 1 <= user_month <= 12:
+            break
+    except ValueError:
+        pass
+    print("   ⚠️  Please enter a valid month (1-12).")
+print(f"   ✅ Month: {user_month}")
+print()
 
+# --- 5. Travel Preferences (Explicit Binary) ---
+print("Answer 1 for Yes, 0 for No to the following preferences:")
+while True:
+    try:
+        user_pref_relax = int(input("   Do you want Relaxation? (1/0): "))
+        user_pref_adv = int(input("   Do you want Adventure? (1/0): "))
+        user_pref_cult = int(input("   Do you want Culture? (1/0): "))
+        user_pref_spir = int(input("   Do you want Spiritual? (1/0): "))
+        if all(x in [0,1] for x in [user_pref_relax, user_pref_adv, user_pref_cult, user_pref_spir]):
+            break
+    except ValueError:
+        pass
+    print("   ⚠️  Invalid choice, enter 1 or 0 only.")
+
+# --- 6. Build input DataFrame (must match training columns exactly) ---
 user_data = {
+    'Age': user_age,
     'NumberOfAdults': user_adults,
     'NumberOfChildren': user_children,
+    'TravelMonth': user_month,
     'Gender': user_gender,
-    'Preferences': user_pref
+    'Budget': user_budget,
+    'Pref_Relaxation': user_pref_relax,
+    'Pref_Adventure': user_pref_adv,
+    'Pref_Culture': user_pref_cult,
+    'Pref_Spiritual': user_pref_spir
 }
 
 user_input = pd.DataFrame([user_data])
@@ -1106,10 +1145,12 @@ print(f"  Model: {best_name}")
 print("=" * 60)
 print()
 print(f"  Your profile:")
+print(f"    Age:          {user_age}")
 print(f"    Gender:       {user_gender}")
-print(f"    Adults:       {user_adults}")
-print(f"    Children:     {user_children}")
-print(f"    Preferences:  {user_pref}")
+print(f"    Budget:       {user_budget}")
+print(f"    Month:        {user_month}")
+print(f"    Group:        {user_adults} Adults, {user_children} Children")
+print(f"    Preferences:  [Relaxation:{user_pref_relax}] [Adventure:{user_pref_adv}] [Culture:{user_pref_cult}] [Spiritual:{user_pref_spir}]")
 print()
 print("  ─────────────────────────────────────")
 
