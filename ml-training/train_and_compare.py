@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import warnings
+from IPython.display import display
 warnings.filterwarnings('ignore')
 
 # Set plotting style
