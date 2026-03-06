@@ -134,8 +134,8 @@ with st.sidebar:
     <div class="sidebar-section-label">{icon("user",size=14,color="#C97D4E")} User Profile</div>
     """, unsafe_allow_html=True)
 
-    plan_name = st.text_input("Trip Plan Name", value="My Awesome Trip", placeholder="e.g. Summer Vacation")
-    age_raw = st.text_input("Current Age", value="30", placeholder="e.g. 30")
+    plan_name = st.text_input("Trip Plan Name",  placeholder="e.g. Summer Vacation")
+    age_raw = st.text_input("Current Age", placeholder="e.g. 30")
     age = int(age_raw) if age_raw.strip().isdigit() else 30
     gender = st.selectbox("Gender Identity", ["Male", "Female", "Other"])
     
@@ -182,7 +182,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-main_tabs = st.tabs(["Discovery Engine", "Import CSV", "History"])
+main_tabs = st.tabs(["Place Suggestions", "Import CSV", "History"])
 
 with main_tabs[0]:
     st.markdown('<div class="hero-sub">Our AI analyzed 1,510 traveler history records during the training phase.</div>', unsafe_allow_html=True)
@@ -191,31 +191,31 @@ with main_tabs[0]:
     col_pred, col_probs = st.columns([1.2,1.8], gap="large")
 
     DEST_IMAGES = {
-        "Agra":               "PASTE_YOUR_URL_HERE",
-        "Amritsar":           "PASTE_YOUR_URL_HERE",
-        "Andaman & Nicobar":  "PASTE_YOUR_URL_HERE",
-        "Auroville":          "PASTE_YOUR_URL_HERE",
-        "Bodh Gaya":          "PASTE_YOUR_URL_HERE",
-        "Delhi":              "PASTE_YOUR_URL_HERE",
-        "Dharamshala":        "PASTE_YOUR_URL_HERE",
-        "Goa":                "PASTE_YOUR_URL_HERE",
-        "Gokarna":            "PASTE_YOUR_URL_HERE",
-        "Hampi":              "PASTE_YOUR_URL_HERE",
-        "Hyderabad":          "PASTE_YOUR_URL_HERE",
-        "Jaipur":             "PASTE_YOUR_URL_HERE",
-        "Jim Corbett":        "PASTE_YOUR_URL_HERE",
-        "Kochi":              "PASTE_YOUR_URL_HERE",
-        "Kolkata":            "PASTE_YOUR_URL_HERE",
-        "Leh Ladakh":         "PASTE_YOUR_URL_HERE",
-        "Lucknow":            "PASTE_YOUR_URL_HERE",
-        "Manali":             "PASTE_YOUR_URL_HERE",
-        "Munnar":             "PASTE_YOUR_URL_HERE",
-        "Mysore":             "PASTE_YOUR_URL_HERE",
-        "Pondicherry":        "PASTE_YOUR_URL_HERE",
-        "Rishikesh":          "PASTE_YOUR_URL_HERE",
-        "Tirupati":           "PASTE_YOUR_URL_HERE",
-        "Varanasi":           "PASTE_YOUR_URL_HERE",
-        "Varkala":            "PASTE_YOUR_URL_HERE",
+        "Agra":               "https://www.onthegotours.com/repository/The-Taj-Mahal--India-Tours--On-The-Go-Tours-298431462895266.jpg",
+        "Amritsar":           "https://sacredsites.com/images/asia/india/punjab/Golden-Temple-2.webp",
+        "Andaman & Nicobar":  "https://www.explorebees.com/uploads/blogs/HOW+TO+REACH+Andaman+and+Nicobar+Islands.jpg",
+        "Auroville":          "https://files.auroville.org/auroville-org/c10eba4a-5a80-45e5-b1fe-c49caba208cc.jpg",
+        "Bodh Gaya":          "https://www.tusktravel.com/blog/wp-content/uploads/2025/05/How-to-Reach-Bodh-Gaya.jpg",
+        "Delhi":              "https://static.toiimg.com/photo/msid-88070906,width-96,height-65.cms",
+        "Dharamshala":        "https://c.ndtvimg.com/gws/ms/top-places-to-visit-in-dharamshala/assets/11.jpeg?1765125887",
+        "Goa":                "https://static.businessworld.in/Untitled%20design%20-%202024-12-31T052430.892_20241231105033_original_image_31.webp",
+        "Gokarna":            "https://templeinkarnataka.com/wp-content/uploads/2024/08/Mahabaleshwara-Temple1.png",
+        "Hampi":              "https://carams.in/wp-content/uploads/2018/11/Hampi.jpg",
+        "Hyderabad":          "https://t4.ftcdn.net/jpg/13/77/26/63/360_F_1377266312_jRydmbVRledy8RPzhOpRtPCNwIl46lEI.jpg",
+        "Jaipur":             "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0a/c4/72/f6/jal-mahal-jaipur-tour.jpg?w=900&h=500&s=1",
+        "Jim Corbett":        "https://uttarakhandtourism.gov.in/assets/media/UTDB_media_1735984081Jungle_safari.jpg",
+        "Kochi":              "https://www.india.com/wp-content/uploads/2024/08/Fort-Kochi.jpg",
+        "Kolkata":            "https://s7ap1.scene7.com/is/image/incredibleindia/victoria-memorial-kolkata-west-bengal-hero?qlt=82&ts=1742156385257",
+        "Leh Ladakh":         "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQSleU3dRyNbNjGJP8ZXOG9LLMVnogpJD2KSg&s",
+        "Lucknow":            "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/08/18/bb/a8.jpg",
+        "Manali":             "https://www.oyorooms.com/travel-guide/wp-content/uploads/2022/03/Budget-Friendly-ways-to-travel-and-stay-in-Manali.jpg",
+        "Munnar":             "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRFatIUfMK22cIuPTluGZoVGifiH1fY9es5EA&s",
+        "Mysore":             "https://cdn.britannica.com/58/124658-050-28314DA4/Maharaja-Palace-Mysuru-Karnataka-India.jpg",
+        "Pondicherry":        "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Pondicherry-Rock_beach_aerial_view.jpg/1280px-Pondicherry-Rock_beach_aerial_view.jpg",
+        "Rishikesh":          "https://s7ap1.scene7.com/is/image/incredibleindia/1-triveni-ghat-rishikesh-uttarakhand-2-city-hero?qlt=82&ts=1726646286991",
+        "Tirupati":           "https://www.hotelierindia.com/cloud/2025/03/20/Kodandarama-Temple-Tirupati-A-Travelers-Guide-to-a-Sacred-Site-1.jpg",
+        "Varanasi":           "https://res.cloudinary.com/odysseytraveller/image/fetch/f_auto,q_auto,dpr_auto,r_4,w_765,h_535.5,c_limit/https://cdn.odysseytraveller.com/app/uploads/2018/05/iStock-827065008.jpg",
+        "Varkala":            "https://s3.india.com/wp-content/uploads/2025/06/8-Relaxing-Weekend-Escapes-From-Varkala-For-Peace-Seekers.jpg",
     }
 
     with col_pred:
@@ -271,7 +271,7 @@ with main_tabs[0]:
                 st.caption("Showing most recent prediction from joblib artifacts.")
 
     with col_probs:
-        st.markdown('<div class="section-head">Multinomial Probability Distribution</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-head">Likely Travel Destinations</div>', unsafe_allow_html=True)
 
         if "prob_dict" in st.session_state:
             prob_dict  = st.session_state["prob_dict"]
