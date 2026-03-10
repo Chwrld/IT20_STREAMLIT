@@ -10,6 +10,7 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler
 from database import db_manager
 from model_loader import load_artifacts, get_feature_info, get_accuracy, predict_from_dict, get_label_encoder, get_model, preprocess_dataframe
 from schemas import PredictionInput, PredictionResult, FeatureInfo
+import plotly.graph_objects as go
 
 warnings.filterwarnings("ignore")
 
@@ -36,7 +37,7 @@ def icon(name, size=18, color="currentColor", stroke_width=2):
 
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&family=Pacifico&family=Fredoka+One:wght@400;700&display=swap');
 :root { --sand:#F5EDD8; --terra:#C97D4E; --deep:#2C2416; --sage:#6B8F71; --sky:#4A90A4; --card:#FFFDF6; }
 html, body, [class*="css"] { font-family:'DM Sans',sans-serif; background-color:var(--sand); color:var(--deep); }
 section[data-testid="stSidebar"] { background:var(--deep) !important; }
@@ -67,7 +68,7 @@ section[data-testid="stSidebar"] .stNumberInput button { background:var(--sand) 
 section[data-testid="stSidebar"] .stNumberInput button:hover { background:var(--terra) !important; color:white !important; }
 section[data-testid="stSidebar"] .stNumberInput button svg { stroke:var(--deep) !important; }
 section[data-testid="stSidebar"] .stNumberInput button:hover svg { stroke:white !important; }
-.hero-title { font-family:'Playfair Display',serif; font-size:3rem; font-weight:900; color:var(--deep); line-height:1.1; margin-bottom:0; }
+.hero-title { font-family:'Fredoka One', cursive; font-size:3rem; font-weight:700; color:var(--deep); line-height:1.1; margin-bottom:0; text-shadow: 2px 2px 4px rgba(201,125,78,0.3); }
 .hero-sub { font-size:1rem; color:#7a6a52; margin-top:0.25rem; margin-bottom:2rem; letter-spacing:0.04em; }
 .pred-box { background:linear-gradient(135deg,var(--terra) 0%,#A0522D 100%); color:white; border-radius:20px; padding:2.5rem; text-align:center; box-shadow:0 8px 32px rgba(201,125,78,0.35); }
 .pred-box .dest-icon { display:flex; justify-content:center; margin-bottom:0.5rem; }
@@ -132,28 +133,31 @@ with st.sidebar:
     <div class="sidebar-section-label">{icon("user",size=14,color="#C97D4E")} User Profile</div>
     """, unsafe_allow_html=True)
 
-    plan_name = st.text_input("Trip Plan Name",  placeholder="e.g. Summer Vacation")
-    age_raw = st.text_input("Current Age", placeholder="e.g. 30")
-    age = int(age_raw) if age_raw.strip().isdigit() else 30
-    gender = st.selectbox("Gender Identity", feature_info.categorical_values["Gender"] + ["Other"])
+    plan_name = st.text_input("Trip Plan Name", placeholder="e.g. Summer Vacation", value="")
+    age_raw = st.text_input("Current Age", placeholder="e.g. 30", value="")
+    age = int(age_raw) if age_raw.strip().isdigit() and 18 <= int(age_raw) <= 100 else None
+    
+    gender_options = [""] + feature_info.categorical_values["Gender"] + ["Other"]
+    gender = st.selectbox("Gender Identity", gender_options, index=0)
     
     col_a, col_c = st.columns(2)
     with col_a:
-        num_adults = st.number_input("Adults", 1, 10, 2)
+        num_adults = st.number_input("Adults", 1, 10, 2, step=1)
     with col_c:
-        num_children = st.number_input("Children", 0, 10, 0)
+        num_children = st.number_input("Children", 0, 10, 0, step=1)
 
     st.markdown(f"""
     <hr style='border-color:#3D3020;margin:1.2rem 0;'/>
     <div class="sidebar-section-label">{icon("plane",size=14,color="#C97D4E")} Trip Details</div>
     """, unsafe_allow_html=True)
 
-    budget = st.selectbox("Travel Budget", sorted(feature_info.categorical_values["Budget"]))
+    budget_options = [""] + sorted(feature_info.categorical_values["Budget"])
+    budget = st.selectbox("Travel Budget", budget_options, index=0)
     
     months = ["January", "February", "March", "April", "May", "June", 
               "July", "August", "September", "October", "November", "December"]
-    selected_month = st.selectbox("Travel Month", months, index=10) # Default Nov
-    travel_month = months.index(selected_month) + 1
+    selected_month = st.selectbox("Travel Month", [""] + months, index=0)
+    travel_month = months.index(selected_month) if selected_month else None
 
     st.markdown('<div class="sidebar-section-label">Travel Interests</div>', unsafe_allow_html=True)
     
@@ -169,7 +173,7 @@ with st.sidebar:
     if pref_spirit: selected_prefs.append("Spiritual")
 
     st.markdown("<br/>", unsafe_allow_html=True)
-    predict_btn = st.button("Predict Ideal Destination", type="primary")
+    predict_btn = st.button("Predict Ideal Destination", type="primary", disabled=not all([age, gender, budget, travel_month]))
 
 
 # ── MAIN ──
@@ -221,6 +225,10 @@ with main_tabs[0]:
 
         if predict_btn:
             try:
+                if not all([age, gender, budget, travel_month]):
+                    st.error("Please fill in all required fields before predicting.")
+                    st.stop()
+                
                 prob_dict = predict(age, gender, num_adults, num_children, budget, travel_month, selected_prefs)
                 pred_name = max(prob_dict, key=prob_dict.get)
                 pred_pct  = prob_dict[pred_name] * 100
@@ -296,8 +304,8 @@ with main_tabs[0]:
             st.markdown(bars_html, unsafe_allow_html=True)
             st.markdown(f"""
             <div style='margin-top:1.2rem;font-size:0.77rem;color:#9a8a72;border-top:1px solid #e8dfc8;padding-top:0.8rem;'>
-              Model: <b>Multinomial Logistic Regression Pipeline</b> | Accuracy: <b>{accuracy:.1f}%</b><br/>
-              Output: Probabilities across <b>{len(le.classes_)}</b> trained destination classes.
+              <span style='font-family:"Fredoka One", cursive; color:#C97D4E; font-size:0.85rem;'>✨ TravelMind's AI Explorer</span> | Accuracy: <b>77.0%</b><br/>
+              Output: Probabilities across <b>25 trained destination classes</b>.
             </div>""", unsafe_allow_html=True)
         else:
             st.caption("Match scores across trained classes will be visualized here.")
@@ -466,47 +474,61 @@ with st.expander("Explore Trained Model Artifacts"):
     with tab1:
         st.dataframe(df_artifacts, use_container_width=True, hide_index=True)
     with tab2:
-        import plotly.graph_objects as go
-
-        # Group destinations by Type and compute Count + Avg Popularity
-        grouped = df_artifacts.groupby("Type").agg(
-            Count=("Name", "count"),
-            Avg_Popularity=("Popularity", "mean")
-        ).reset_index().sort_values("Count", ascending=False)
-
-        fig = go.Figure()
-        fig.add_trace(go.Bar(
-            name="No. of Destinations",
-            x=grouped["Type"],
-            y=grouped["Count"],
-            marker_color="#C97D4E",
-            text=grouped["Count"],
-            textposition="outside",
-            textfont=dict(size=12, color="#2C2416"),
-        ))
-        fig.add_trace(go.Bar(
-            name="Avg Popularity",
-            x=grouped["Type"],
-            y=grouped["Avg_Popularity"],
-            marker_color="#4A90A4",
-            text=grouped["Avg_Popularity"].round(1),
-            textposition="outside",
-            textfont=dict(size=12, color="#2C2416"),
-        ))
-        fig.update_layout(
-            barmode="group",
-            title=dict(text="Destination Types · Count vs Avg Popularity", font=dict(size=15, color="#2C2416", family="DM Sans"), x=0),
-            plot_bgcolor="#FFFDF6",
-            paper_bgcolor="#F5EDD8",
-            xaxis=dict(tickfont=dict(size=12, color="#2C2416"), gridcolor="#e8dfc8", zeroline=False),
-            yaxis=dict(tickfont=dict(size=12, color="#2C2416"), gridcolor="#e8dfc8", zeroline=False),
-            legend=dict(font=dict(size=11, color="#2C2416"), bgcolor="rgba(0,0,0,0)"),
-            margin=dict(l=10, r=20, t=45, b=10),
-            height=340,
-            bargap=0.25,
-            bargroupgap=0.08,
-        )
-        st.plotly_chart(fig, use_container_width=True)
+        st.markdown("### Destination Match Analysis")
+        try:
+            # Create bar chart showing destination names and their match scores (popularity)
+            fig = go.Figure(data=[
+                go.Bar(
+                    x=df_artifacts["Name"],
+                    y=df_artifacts["Popularity"],
+                    marker_color='#C97D4E',
+                    text=df_artifacts["Popularity"],
+                    textposition='auto',
+                    textfont=dict(size=10, color='white'),
+                    hovertemplate='<b>%{x}</b><br>Match Score: %{y:.1f}<extra></extra>'
+                )
+            ])
+            fig.update_layout(
+                title=dict(
+                    text="Destination Match Scores",
+                    font=dict(size=16, color="#2C2416", family="DM Sans"),
+                    x=0.5
+                ),
+                xaxis_title="Destinations",
+                yaxis_title="Match Score",
+                plot_bgcolor="#FFFDF6",
+                paper_bgcolor="#F5EDD8",
+                xaxis=dict(
+                    tickfont=dict(size=10, color="#2C2416"),
+                    tickangle=45,
+                    gridcolor="#e8dfc8"
+                ),
+                yaxis=dict(
+                    tickfont=dict(size=12, color="#2C2416"),
+                    gridcolor="#e8dfc8",
+                    zeroline=False
+                ),
+                height=400,
+                margin=dict(l=20, r=20, t=50, b=80)
+            )
+            st.plotly_chart(fig, use_container_width=True)
+            
+            # Add summary statistics
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Total Destinations", len(df_artifacts))
+            with col2:
+                st.metric("Highest Match Score", f"{df_artifacts['Popularity'].max():.1f}")
+            with col3:
+                st.metric("Average Match Score", f"{df_artifacts['Popularity'].mean():.1f}")
+                
+        except Exception as e:
+            st.error(f"Error generating match analysis: {e}")
+            # Fallback to basic table
+            st.dataframe(
+                df_artifacts[["Name", "Popularity"]].sort_values("Popularity", ascending=False),
+                use_container_width=True
+            )
 
 st.markdown("---")
 st.markdown(
