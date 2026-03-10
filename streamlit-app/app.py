@@ -8,6 +8,8 @@ import warnings
 from pathlib import Path
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from database import db_manager
+from model_loader import load_artifacts, get_feature_info, get_accuracy, predict_from_dict, get_label_encoder, get_model, preprocess_dataframe
+from schemas import PredictionInput, PredictionResult, FeatureInfo
 
 warnings.filterwarnings("ignore")
 
@@ -45,16 +47,25 @@ section[data-testid="stSidebar"] .stNumberInput label,
 section[data-testid="stSidebar"] .stCheckbox label p {
     color:var(--terra) !important; font-weight:500; font-size:0.85rem; letter-spacing:0.05em; text-transform:uppercase;
 }
-section[data-testid="stSidebar"] .stSelectbox > div > div { background:#3D3020 !important; border:1px solid var(--terra) !important; color:var(--sand) !important; }
+section[data-testid="stSidebar"] .stSelectbox > div > div { background:var(--sand) !important; border:1px solid var(--terra) !important; color:var(--deep) !important; border-radius:6px !important; caret-color:var(--deep) !important; }
+section[data-testid="stSidebar"] .stSelectbox > div > div > div { color:var(--deep) !important; -webkit-text-fill-color:var(--deep) !important; }
+section[data-testid="stSidebar"] .stSelectbox > div > div:focus { background:var(--sand) !important; color:var(--deep) !important; }
+section[data-testid="stSidebar"] .stSelectbox [data-baseweb="select"] > div { background:var(--sand) !important; color:var(--deep) !important; border-radius:6px !important; }
+section[data-testid="stSidebar"] .stSelectbox [data-baseweb="select"] input { background:var(--sand) !important; color:var(--deep) !important; -webkit-text-fill-color:var(--deep) !important; }
+section[data-testid="stSidebar"] .stSelectbox [data-baseweb="select"] [data-baseweb="popover"] { background:var(--sand) !important; border:1px solid var(--terra) !important; border-radius:6px !important; }
+section[data-testid="stSidebar"] .stSelectbox [data-baseweb="select"] [data-baseweb="popover"] div { color:var(--deep) !important; -webkit-text-fill-color:var(--deep) !important; }
+section[data-testid="stSidebar"] .stSelectbox [data-baseweb="select"] [data-baseweb="popover"] [role="option"] { color:var(--deep) !important; background:var(--sand) !important; -webkit-text-fill-color:var(--deep) !important; }
+section[data-testid="stSidebar"] .stSelectbox [data-baseweb="select"] [data-baseweb="popover"] [role="option"]:hover { background:#e8dfc8 !important; color:var(--deep) !important; -webkit-text-fill-color:var(--deep) !important; }
+section[data-testid="stSidebar"] .stSelectbox [data-baseweb="select"] [data-baseweb="popover"] [role="option"][aria-selected="true"] { background:#e8dfc8 !important; color:var(--deep) !important; -webkit-text-fill-color:var(--deep) !important; }
 section[data-testid="stSidebar"] .stTextInput > div > input,
 section[data-testid="stSidebar"] .stTextInput > div > div > input,
 section[data-testid="stSidebar"] .stNumberInput input,
 section[data-testid="stSidebar"] input[type="number"],
-section[data-testid="stSidebar"] input[type="text"] { background:#3D3020 !important; border:1px solid var(--terra) !important; color:#C97D4E !important; border-radius:6px !important; caret-color:#C97D4E !important; -webkit-text-fill-color:#C97D4E !important; }
-section[data-testid="stSidebar"] input::placeholder { color:#7a5535 !important; opacity:1 !important; -webkit-text-fill-color:#7a5535 !important; }
-section[data-testid="stSidebar"] .stNumberInput button { background:#3D3020 !important; border:1px solid var(--terra) !important; color:#C97D4E !important; }
+section[data-testid="stSidebar"] input[type="text"] { background:var(--sand) !important; border:1px solid var(--terra) !important; color:var(--deep) !important; border-radius:6px !important; caret-color:var(--deep) !important; -webkit-text-fill-color:var(--deep) !important; }
+section[data-testid="stSidebar"] input::placeholder { color:#9a8a72 !important; opacity:1 !important; -webkit-text-fill-color:#9a8a72 !important; }
+section[data-testid="stSidebar"] .stNumberInput button { background:var(--sand) !important; border:1px solid var(--terra) !important; color:var(--deep) !important; }
 section[data-testid="stSidebar"] .stNumberInput button:hover { background:var(--terra) !important; color:white !important; }
-section[data-testid="stSidebar"] .stNumberInput button svg { stroke:#C97D4E !important; }
+section[data-testid="stSidebar"] .stNumberInput button svg { stroke:var(--deep) !important; }
 section[data-testid="stSidebar"] .stNumberInput button:hover svg { stroke:white !important; }
 .hero-title { font-family:'Playfair Display',serif; font-size:3rem; font-weight:900; color:var(--deep); line-height:1.1; margin-bottom:0; }
 .hero-sub { font-size:1rem; color:#7a6a52; margin-top:0.25rem; margin-bottom:2rem; letter-spacing:0.04em; }
@@ -82,23 +93,12 @@ section[data-testid="stSidebar"] .stNumberInput button:hover svg { stroke:white 
 # ── Database Initialization ──
 db_manager.init_db()
 
-# ── Load trained model and artifacts from notebook ──
-@st.cache_resource
-def load_trained_model():
-    # Using Path(__file__) logic from professor's design
-    ROOT = Path(__file__).resolve().parents[1]
-    base_path = ROOT / "models"
-    
-    # Loading strictly the 4 artifacts derived from the joblib training process
-    model = joblib.load(base_path / "best_model.joblib")
-    preprocessor = joblib.load(base_path / "preprocessor.joblib")
-    le = joblib.load(base_path / "label_encoder.joblib")
-    X_columns = joblib.load(base_path / "X_columns.joblib")
-    
-    # Notebook confirmed 20.1% accuracy for the best model on the test set
-    return model, le, preprocessor, X_columns, 20.1
-
-model, le, preprocessor, X_columns, accuracy = load_trained_model()
+# ── Load trained model and artifacts ──
+load_artifacts()
+feature_info_data = get_feature_info()
+feature_info = FeatureInfo(feature_info_data)
+accuracy = get_accuracy()
+le = get_label_encoder()
 
 # ── Prediction Logic ──
 def predict(age, gender, num_adults, num_children, budget, travel_month, prefs):
@@ -115,11 +115,9 @@ def predict(age, gender, num_adults, num_children, budget, travel_month, prefs):
         "Pref_Culture": 1 if "Heritage & Culture" in prefs else 0,
         "Pref_Spiritual": 1 if "Spiritual" in prefs else 0
     }
-    input_data = pd.DataFrame([input_dict])
     
-    # model is a Pipeline object containing both the preprocessor and the classifier
-    probs = model.predict_proba(input_data)[0]
-    return dict(zip(le.classes_, probs))
+    # Use the model_loader's predict function
+    return predict_from_dict(input_dict)
 
 
 # ── SIDEBAR ──
@@ -137,7 +135,7 @@ with st.sidebar:
     plan_name = st.text_input("Trip Plan Name", placeholder="e.g. Summer Vacation")
     age_raw = st.text_input("Current Age", placeholder="e.g. 30")
     age = int(age_raw) if age_raw.strip().isdigit() else 30
-    gender = st.selectbox("Gender Identity", ["Male", "Female", "Other"])
+    gender = st.selectbox("Gender Identity", feature_info.categorical_values["Gender"] + ["Other"])
     
     col_a, col_c = st.columns(2)
     with col_a:
@@ -150,7 +148,7 @@ with st.sidebar:
     <div class="sidebar-section-label">{icon("plane",size=14,color="#C97D4E")} Trip Details</div>
     """, unsafe_allow_html=True)
 
-    budget = st.selectbox("Travel Budget", ["Low", "Medium", "High"], index=1)
+    budget = st.selectbox("Travel Budget", sorted(feature_info.categorical_values["Budget"]))
     
     months = ["January", "February", "March", "April", "May", "June", 
               "July", "August", "September", "October", "November", "December"]
@@ -302,8 +300,49 @@ with main_tabs[0]:
             st.caption("Match scores across trained classes will be visualized here.")
 
 with main_tabs[1]:
-    st.markdown('<div class="section-head">Batch Pipeline Analysis</div>', unsafe_allow_html=True)
-    st.write("Upload a CSV file to process multiple profiles through the trained feature pipeline.")
+    st.markdown('<div class="section-head">Batch Processing</div>', unsafe_allow_html=True)
+    st.write("Upload a CSV file to process multiple profiles and add predictions to history.")
+    
+    # CSV Format Guide
+    with st.expander("📋 CSV Format Guide"):
+        st.markdown("""
+        **Required Columns:** Your CSV must include these exact column names:
+        
+        | Column | Type | Description | Example Values |
+        |--------|------|-------------|----------------|
+        | `Name` | Optional | Traveler name for better history tracking | "John Smith" |
+        | `Age` | Required | Age in years | 25, 30, 45 |
+        | `NumberOfAdults` | Required | Number of adults in group | 1, 2, 3 |
+        | `NumberOfChildren` | Required | Number of children in group | 0, 1, 2 |
+        | `TravelMonth` | Required | Month number (1-12) | 1=Jan, 6=Jun, 12=Dec |
+        | `Gender` | Required | Gender identity | Male, Female, Other |
+        | `Budget` | Required | Travel budget level | Low, Medium, High |
+        | `Pref_Relaxation` | Required | Relaxation preference (0=No, 1=Yes) | 0, 1 |
+        | `Pref_Adventure` | Required | Adventure preference (0=No, 1=Yes) | 0, 1 |
+        | `Pref_Culture` | Required | Culture preference (0=No, 1=Yes) | 0, 1 |
+        | `Pref_Spiritual` | Required | Spiritual preference (0=No, 1=Yes) | 0, 1 |
+        
+        **Example CSV:**
+        ```csv
+        Name,Age,NumberOfAdults,NumberOfChildren,TravelMonth,Gender,Budget,Pref_Relaxation,Pref_Adventure,Pref_Culture,Pref_Spiritual
+        John Smith,25,2,0,6,Male,Medium,1,0,1,0
+        Sarah Johnson,30,1,1,8,Female,High,0,1,1,0
+        ```
+        """)
+        
+        # Download sample CSV
+        sample_csv = """Name,Age,NumberOfAdults,NumberOfChildren,TravelMonth,Gender,Budget,Pref_Relaxation,Pref_Adventure,Pref_Culture,Pref_Spiritual
+John Smith,25,2,0,6,Male,Medium,1,0,1,0
+Sarah Johnson,30,1,1,8,Female,High,0,1,1,0
+Michael Brown,45,2,2,12,Male,Low,1,1,0,0
+Emily Davis,35,3,0,4,Female,Medium,0,0,1,1
+David Wilson,28,1,0,9,Male,High,1,1,0,1"""
+        st.download_button(
+            label="📥 Download Sample CSV",
+            data=sample_csv,
+            file_name="sample_batch_data.csv",
+            mime="text/csv"
+        )
     
     uploaded_file = st.file_uploader("Upload Profile Data", type=["csv"])
     if uploaded_file:
@@ -317,18 +356,71 @@ with main_tabs[1]:
             missing = [c for c in required if c not in batch_df.columns]
             
             if missing:
-                st.error(f"Missing required metadata columns: {missing}")
-            elif st.button("🚀 Process Pipeline"):
-                with st.spinner("Executing model..."):
-                    preds = model.predict(batch_df[required])
-                    batch_df["Recommendation"] = le.inverse_transform(preds)
-                    st.success(f"Classified {len(batch_df)} records successfully.")
-                    st.dataframe(batch_df, use_container_width=True)
+                st.error(f"Missing required columns: {', '.join(missing)}")
+                st.info("Check the CSV Format Guide above for the correct column names and format.")
+            elif st.button("🚀 Process & Save to History"):
+                with st.spinner("Processing batch and saving to history..."):
+                    saved_count = 0
+                    months_list = ["January", "February", "March", "April", "May", "June", 
+                                 "July", "August", "September", "October", "November", "December"]
                     
-                    csv = batch_df.to_csv(index=False).encode('utf-8')
-                    st.download_button("Download Classified Data", data=csv, file_name="classified_travelers.csv", mime="text/csv")
+                    for idx, row in batch_df.iterrows():
+                        try:
+                            # Create input dict for prediction
+                            input_dict = {
+                                "Age": int(row["Age"]),
+                                "NumberOfAdults": int(row["NumberOfAdults"]),
+                                "NumberOfChildren": int(row["NumberOfChildren"]),
+                                "TravelMonth": int(row["TravelMonth"]),
+                                "Gender": row["Gender"],
+                                "Budget": row["Budget"],
+                                "Pref_Relaxation": int(row["Pref_Relaxation"]),
+                                "Pref_Adventure": int(row["Pref_Adventure"]),
+                                "Pref_Culture": int(row["Pref_Culture"]),
+                                "Pref_Spiritual": int(row["Pref_Spiritual"])
+                            }
+                            
+                            # Get prediction probabilities
+                            prob_dict = predict_from_dict(input_dict)
+                            pred_name = max(prob_dict, key=prob_dict.get)
+                            pred_pct = prob_dict[pred_name] * 100
+                            
+                            # Convert preferences back to list format
+                            prefs_list = []
+                            if row["Pref_Relaxation"]: prefs_list.append("Relaxation")
+                            if row["Pref_Adventure"]: prefs_list.append("Adventure")
+                            if row["Pref_Culture"]: prefs_list.append("Heritage & Culture")
+                            if row["Pref_Spiritual"]: prefs_list.append("Spiritual")
+                            
+                            # Determine plan name - use Name column if available, otherwise use batch import
+                            plan_name = row.get("Name", f"Batch Import {idx+1}")
+                            if pd.isna(plan_name) or plan_name == "":
+                                plan_name = f"Batch Import {idx+1}"
+                            
+                            # Save to database
+                            db_manager.save_prediction(
+                                plan_name=plan_name,
+                                recommendation=pred_name,
+                                match_confidence=pred_pct,
+                                age=int(row["Age"]),
+                                gender=row["Gender"],
+                                adults=int(row["NumberOfAdults"]),
+                                children=int(row["NumberOfChildren"]),
+                                budget=row["Budget"],
+                                month=months_list[int(row["TravelMonth"])-1],
+                                prefs=prefs_list
+                            )
+                            saved_count += 1
+                            
+                        except Exception as row_error:
+                            st.warning(f"Error processing row {idx+1}: {row_error}")
+                            continue
+                    
+                    st.success(f"Successfully processed and saved {saved_count} predictions to history!")
+                    st.info("Check the 'History' tab to view all saved predictions.")
+                    
         except Exception as e:
-            st.error(f"Pipeline error: {e}")
+            st.error(f"Batch processing error: {e}")
 
 with main_tabs[2]:
     st.markdown('<div class="section-head">Trained Prediction Log</div>', unsafe_allow_html=True)
