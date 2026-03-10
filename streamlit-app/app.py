@@ -132,7 +132,7 @@ with st.sidebar:
     <div class="sidebar-section-label">{icon("user",size=14,color="#C97D4E")} User Profile</div>
     """, unsafe_allow_html=True)
 
-    plan_name = st.text_input("Trip Plan Name", placeholder="e.g. Summer Vacation")
+    plan_name = st.text_input("Trip Plan Name",  placeholder="e.g. Summer Vacation")
     age_raw = st.text_input("Current Age", placeholder="e.g. 30")
     age = int(age_raw) if age_raw.strip().isdigit() else 30
     gender = st.selectbox("Gender Identity", feature_info.categorical_values["Gender"] + ["Other"])
@@ -180,7 +180,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-main_tabs = st.tabs(["Discovery Engine", "Import CSV", "History"])
+main_tabs = st.tabs(["Place Suggestions", "Import CSV", "History"])
 
 with main_tabs[0]:
     st.markdown('<div class="hero-sub">Our AI analyzed 1,510 traveler history records during the training phase.</div>', unsafe_allow_html=True)
@@ -189,31 +189,31 @@ with main_tabs[0]:
     col_pred, col_probs = st.columns([1.2,1.8], gap="large")
 
     DEST_IMAGES = {
-        "Agra":               "https://upload.wikimedia.org/wikipedia/commons/6/68/Taj_Mahal%2C_Agra%2C_India.jpg",
-        "Amritsar":           "https://static.wixstatic.com/media/3417b6_9d136d18669d49d6ae8315c01402a94d~mv2.jpg/v1/fill/w_640,h_480,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/3417b6_9d136d18669d49d6ae8315c01402a94d~mv2.jpg",
-        "Andaman & Nicobar":  "https://miro.medium.com/v2/resize:fit:1400/1*71GCdeCXyEA9bxjdfigJAw.jpeg",
-        "Auroville":          "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQNPEkXAR_drr05lUw8rH8WHKoTEy3cW_oPRg&s",
-        "Bodh Gaya":          "https://clubmahindra.gumlet.io/blog/media/section_images/bodhgayato-ca8dd62bea3ec80.jpg?w=376&dpr=2.6",
-        "Delhi":              "https://static.toiimg.com/thumb/msid-88070906,width-748,height-499,resizemode=4,imgsize-73252/.jpg",
+        "Agra":               "https://www.onthegotours.com/repository/The-Taj-Mahal--India-Tours--On-The-Go-Tours-298431462895266.jpg",
+        "Amritsar":           "https://sacredsites.com/images/asia/india/punjab/Golden-Temple-2.webp",
+        "Andaman & Nicobar":  "https://www.explorebees.com/uploads/blogs/HOW+TO+REACH+Andaman+and+Nicobar+Islands.jpg",
+        "Auroville":          "https://files.auroville.org/auroville-org/c10eba4a-5a80-45e5-b1fe-c49caba208cc.jpg",
+        "Bodh Gaya":          "https://www.tusktravel.com/blog/wp-content/uploads/2025/05/How-to-Reach-Bodh-Gaya.jpg",
+        "Delhi":              "https://static.toiimg.com/photo/msid-88070906,width-96,height-65.cms",
         "Dharamshala":        "https://c.ndtvimg.com/gws/ms/top-places-to-visit-in-dharamshala/assets/11.jpeg?1765125887",
         "Goa":                "https://static.businessworld.in/Untitled%20design%20-%202024-12-31T052430.892_20241231105033_original_image_31.webp",
         "Gokarna":            "https://templeinkarnataka.com/wp-content/uploads/2024/08/Mahabaleshwara-Temple1.png",
-        "Hampi":              "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQPFmtLlatp6C7_1ffSCSgsci2Jgd6vdJlc6g&s",
+        "Hampi":              "https://carams.in/wp-content/uploads/2018/11/Hampi.jpg",
         "Hyderabad":          "https://t4.ftcdn.net/jpg/13/77/26/63/360_F_1377266312_jRydmbVRledy8RPzhOpRtPCNwIl46lEI.jpg",
-        "Jaipur":             "https://www.agoda.com/wp-content/uploads/2024/05/Nahargarh-Fort-jaipur-india-1244x700.jpg",
-        "Jim Corbett":        "https://www.goldentriangletour.com/userfiles/6corbett.jpg",
+        "Jaipur":             "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0a/c4/72/f6/jal-mahal-jaipur-tour.jpg?w=900&h=500&s=1",
+        "Jim Corbett":        "https://uttarakhandtourism.gov.in/assets/media/UTDB_media_1735984081Jungle_safari.jpg",
         "Kochi":              "https://www.india.com/wp-content/uploads/2024/08/Fort-Kochi.jpg",
-        "Kolkata":            "https://www.laurewanders.com/wp-content/uploads/2023/10/Places-to-visit-in-Kolkata-in-one-day-7-1024x683.jpg",
-        "Leh Ladakh":         "https://www.felixferiatravel.com/images/1736765602Leh_Ladakh_Image_(18).jpg",
-        "Lucknow":            "https://media.cntraveller.com/photos/62ed00762148309d8a688192/1:1/w_1960,h_1960,c_limit/Rumi%20Darwaza%20Lucknow-GettyImages-159000092.jpeg",
-        "Manali":             "https://rachnatravels.in/uploads/2025/10/thumbnail-discover-india-s-hiking-capital-why-manali-leads-the-trekking-scene.webp",
-        "Munnar":             "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTurXKPcsvgPBZMfAv0vgdpSQSppKfmA8Ns-A&s",
-        "Mysore":             "https://www.fabhotels.com/blog/wp-content/uploads/2019/05/Mysore-palace_600.jpg",
+        "Kolkata":            "https://s7ap1.scene7.com/is/image/incredibleindia/victoria-memorial-kolkata-west-bengal-hero?qlt=82&ts=1742156385257",
+        "Leh Ladakh":         "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQSleU3dRyNbNjGJP8ZXOG9LLMVnogpJD2KSg&s",
+        "Lucknow":            "https://media-cdn.tripadvisor.com/media/attractions-splice-spp-674x446/08/18/bb/a8.jpg",
+        "Manali":             "https://www.oyorooms.com/travel-guide/wp-content/uploads/2022/03/Budget-Friendly-ways-to-travel-and-stay-in-Manali.jpg",
+        "Munnar":             "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRFatIUfMK22cIuPTluGZoVGifiH1fY9es5EA&s",
+        "Mysore":             "https://cdn.britannica.com/58/124658-050-28314DA4/Maharaja-Palace-Mysuru-Karnataka-India.jpg",
         "Pondicherry":        "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Pondicherry-Rock_beach_aerial_view.jpg/1280px-Pondicherry-Rock_beach_aerial_view.jpg",
         "Rishikesh":          "https://s7ap1.scene7.com/is/image/incredibleindia/1-triveni-ghat-rishikesh-uttarakhand-2-city-hero?qlt=82&ts=1726646286991",
-        "Tirupati":           "https://static.toiimg.com/thumb/imgsize-23456,msid-117096573,width-600,resizemode-4/117096573.jpg",
-        "Varanasi":           "https://www.pelago.com/img/collections/varanasi/0527-0907_varanasi.jpg",
-        "Varkala":            "https://s3.india.com/wp-content/uploads/2025/06/8-Relaxing-Weekend-Escapes-From-Varkala-For-Peace-Seekers.jpg##image/jpg",
+        "Tirupati":           "https://www.hotelierindia.com/cloud/2025/03/20/Kodandarama-Temple-Tirupati-A-Travelers-Guide-to-a-Sacred-Site-1.jpg",
+        "Varanasi":           "https://res.cloudinary.com/odysseytraveller/image/fetch/f_auto,q_auto,dpr_auto,r_4,w_765,h_535.5,c_limit/https://cdn.odysseytraveller.com/app/uploads/2018/05/iStock-827065008.jpg",
+        "Varkala":            "https://s3.india.com/wp-content/uploads/2025/06/8-Relaxing-Weekend-Escapes-From-Varkala-For-Peace-Seekers.jpg",
     }
 
     with col_pred:
@@ -276,23 +276,26 @@ with main_tabs[0]:
             pred_name  = max(prob_dict, key=prob_dict.get)
             prob_pairs = sorted(prob_dict.items(), key=lambda x: x[1], reverse=True)[:3]
 
-            bars_html = ""
+            bars_html = "<div style='display:flex;flex-direction:column;gap:1.2rem;height:100%;'>"
             for i, (dname, prob) in enumerate(prob_pairs):
                 pct  = prob * 100
                 clr  = colors[i % len(colors)]
-                pin  = icon("map-pin", size=13, color=clr)
+                pin  = icon("map-pin", size=16, color=clr)
                 bold = "font-weight:700;" if dname == pred_name else ""
                 bars_html += f"""
-                <div class="prob-row">
-                  <div class="prob-label" style="display:flex;align-items:center;gap:0.3rem;{bold}">{pin} {dname}</div>
-                  <div class="prob-bar-wrap">
-                    <div class="prob-bar-fill" style="width:{pct:.1f}%;background:{clr};"></div>
+                <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:0.5rem;">
+                  <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <div style="display:flex;align-items:center;gap:0.4rem;{bold}font-size:1rem;color:#2C2416;">{pin} {dname}</div>
+                    <div style="font-size:1rem;font-weight:700;color:{clr};">{pct:.1f}%</div>
                   </div>
-                  <div class="prob-pct" style="color:{clr};">{pct:.1f}%</div>
+                  <div style="background:#e8dfc8;border-radius:100px;height:22px;overflow:hidden;">
+                    <div style="width:{pct:.1f}%;height:100%;border-radius:100px;background:{clr};transition:width 0.6s ease;"></div>
+                  </div>
                 </div>"""
+            bars_html += "</div>"
             st.markdown(bars_html, unsafe_allow_html=True)
             st.markdown(f"""
-            <div style='margin-top:1rem;font-size:0.77rem;color:#9a8a72;border-top:1px solid #e8dfc8;padding-top:0.8rem;'>
+            <div style='margin-top:1.2rem;font-size:0.77rem;color:#9a8a72;border-top:1px solid #e8dfc8;padding-top:0.8rem;'>
               Model: <b>Multinomial Logistic Regression Pipeline</b> | Accuracy: <b>{accuracy:.1f}%</b><br/>
               Output: Probabilities across <b>{len(le.classes_)}</b> trained destination classes.
             </div>""", unsafe_allow_html=True)
@@ -463,13 +466,47 @@ with st.expander("Explore Trained Model Artifacts"):
     with tab1:
         st.dataframe(df_artifacts, use_container_width=True, hide_index=True)
     with tab2:
-        st.dataframe(
-            df_artifacts.groupby("Type")["Popularity"]
-            .agg(["mean","min","max","count"])
-            .rename(columns={"mean":"Avg Popularity","min":"Min","max":"Max","count":"Count"})
-            .round(2),
-            use_container_width=True
+        import plotly.graph_objects as go
+
+        # Group destinations by Type and compute Count + Avg Popularity
+        grouped = df_artifacts.groupby("Type").agg(
+            Count=("Name", "count"),
+            Avg_Popularity=("Popularity", "mean")
+        ).reset_index().sort_values("Count", ascending=False)
+
+        fig = go.Figure()
+        fig.add_trace(go.Bar(
+            name="No. of Destinations",
+            x=grouped["Type"],
+            y=grouped["Count"],
+            marker_color="#C97D4E",
+            text=grouped["Count"],
+            textposition="outside",
+            textfont=dict(size=12, color="#2C2416"),
+        ))
+        fig.add_trace(go.Bar(
+            name="Avg Popularity",
+            x=grouped["Type"],
+            y=grouped["Avg_Popularity"],
+            marker_color="#4A90A4",
+            text=grouped["Avg_Popularity"].round(1),
+            textposition="outside",
+            textfont=dict(size=12, color="#2C2416"),
+        ))
+        fig.update_layout(
+            barmode="group",
+            title=dict(text="Destination Types · Count vs Avg Popularity", font=dict(size=15, color="#2C2416", family="DM Sans"), x=0),
+            plot_bgcolor="#FFFDF6",
+            paper_bgcolor="#F5EDD8",
+            xaxis=dict(tickfont=dict(size=12, color="#2C2416"), gridcolor="#e8dfc8", zeroline=False),
+            yaxis=dict(tickfont=dict(size=12, color="#2C2416"), gridcolor="#e8dfc8", zeroline=False),
+            legend=dict(font=dict(size=11, color="#2C2416"), bgcolor="rgba(0,0,0,0)"),
+            margin=dict(l=10, r=20, t=45, b=10),
+            height=340,
+            bargap=0.25,
+            bargroupgap=0.08,
         )
+        st.plotly_chart(fig, use_container_width=True)
 
 st.markdown("---")
 st.markdown(
