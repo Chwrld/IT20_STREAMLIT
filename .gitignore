@@ -1,0 +1,25 @@
+# Virtual environments
+.venv/
+.venv-1/
+.venv-2/
+env/
+venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.idea/
+.vscode/
+
+# SQLite database (ephemeral on Streamlit Cloud)
+*.db
+
+# OS
+.DS_Store
+Thumbs.db
