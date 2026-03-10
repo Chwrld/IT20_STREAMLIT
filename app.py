@@ -364,7 +364,7 @@ David Wilson,28,1,0,9,Male,High,1,1,0,1"""
     if uploaded_file:
         try:
             batch_df = pd.read_csv(uploaded_file)
-            st.dataframe(batch_df.head(), use_container_width=True)
+            st.dataframe(batch_df.head(), width='stretch')
             
             # The pipeline handles scaling and encoding internally for these 10 features
             required = ["Age", "NumberOfAdults", "NumberOfChildren", "TravelMonth", "Gender", "Budget", 
@@ -442,7 +442,7 @@ with main_tabs[2]:
     st.markdown('<div class="section-head">Trained Prediction Log</div>', unsafe_allow_html=True)
     history = db_manager.get_history()
     if history:
-        st.dataframe(pd.DataFrame(history), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(history), width='stretch', hide_index=True)
         if st.button("Clear Prediction History"):
             db_manager.clear_history()
             st.rerun()
@@ -477,7 +477,7 @@ with st.expander("Explore Trained Model Artifacts"):
     st.markdown(f"**{len(df_artifacts)} destination classes · learned by the trained model**")
     tab1, tab2 = st.tabs(["Destinations", "Summary Stats"])
     with tab1:
-        st.dataframe(df_artifacts, use_container_width=True, hide_index=True)
+        st.dataframe(df_artifacts, width='stretch', hide_index=True)
     with tab2:
         st.markdown("### Destination Match Analysis")
         try:
@@ -516,7 +516,7 @@ with st.expander("Explore Trained Model Artifacts"):
                 height=400,
                 margin=dict(l=20, r=20, t=50, b=80)
             )
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
             
             # Add summary statistics
             col1, col2, col3 = st.columns(3)
@@ -532,7 +532,7 @@ with st.expander("Explore Trained Model Artifacts"):
             # Fallback to basic table
             st.dataframe(
                 df_artifacts[["Name", "Popularity"]].sort_values("Popularity", ascending=False),
-                use_container_width=True
+                width='stretch'
             )
 
 st.markdown("---")
