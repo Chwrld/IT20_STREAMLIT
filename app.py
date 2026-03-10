@@ -11,7 +11,6 @@ from pathlib import Path
 # Ensure the streamlit-app directory is on the path so its modules resolve
 sys.path.insert(0, str(Path(__file__).parent / "streamlit-app"))
 
-from sklearn.preprocessing import LabelEncoder, StandardScaler
 from database import db_manager
 from model_loader import load_artifacts, get_feature_info, get_accuracy, predict_from_dict, get_label_encoder, get_model, preprocess_dataframe
 from schemas import PredictionInput, PredictionResult, FeatureInfo
@@ -25,7 +24,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-def icon(name, size=18, color="currentColor", stroke_width=2):
+def icon(name, size=18, color="currentColor", stroke_width: float = 2):
     icons = {
         "compass":  f"""<svg xmlns="http://www.w3.org/2000/svg" width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="{stroke_width}" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>""",
         "user":     f"""<svg xmlns="http://www.w3.org/2000/svg" width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="{stroke_width}" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>""",
@@ -101,7 +100,7 @@ db_manager.init_db()
 
 # ── Load trained model and artifacts ──
 load_artifacts()
-feature_info_data = get_feature_info()
+feature_info_data = get_feature_info() or {}
 feature_info = FeatureInfo(feature_info_data)
 accuracy = get_accuracy()
 le = get_label_encoder()
@@ -235,7 +234,7 @@ with main_tabs[0]:
                     st.stop()
                 
                 prob_dict = predict(age, gender, num_adults, num_children, budget, travel_month, selected_prefs)
-                pred_name = max(prob_dict, key=prob_dict.get)
+                pred_name = max(prob_dict, key=lambda k: prob_dict[k])
                 pred_pct  = prob_dict[pred_name] * 100
 
                 dest_svg = icon("map-pin", size=56, color="white", stroke_width=1.2)
@@ -269,7 +268,7 @@ with main_tabs[0]:
                     adults=num_adults,
                     children=num_children,
                     budget=budget,
-                    month=months[travel_month-1],
+                    month=selected_month,
                     prefs=selected_prefs
                 )
             except Exception as e:
@@ -286,7 +285,7 @@ with main_tabs[0]:
 
         if "prob_dict" in st.session_state:
             prob_dict  = st.session_state["prob_dict"]
-            pred_name  = max(prob_dict, key=prob_dict.get)
+            pred_name  = max(prob_dict, key=lambda k: prob_dict[k])
             prob_pairs = sorted(prob_dict.items(), key=lambda x: x[1], reverse=True)[:3]
 
             bars_html = "<div style='display:flex;flex-direction:column;gap:1.2rem;height:100%;'>"
@@ -381,6 +380,7 @@ David Wilson,28,1,0,9,Male,High,1,1,0,1"""
                                  "July", "August", "September", "October", "November", "December"]
                     
                     for idx, row in batch_df.iterrows():
+                        row_num = int(idx)  # type: ignore[arg-type]
                         try:
                             # Create input dict for prediction
                             input_dict = {
@@ -398,7 +398,7 @@ David Wilson,28,1,0,9,Male,High,1,1,0,1"""
                             
                             # Get prediction probabilities
                             prob_dict = predict_from_dict(input_dict)
-                            pred_name = max(prob_dict, key=prob_dict.get)
+                            pred_name = max(prob_dict, key=lambda k: prob_dict[k])
                             pred_pct = prob_dict[pred_name] * 100
                             
                             # Convert preferences back to list format
@@ -409,9 +409,9 @@ David Wilson,28,1,0,9,Male,High,1,1,0,1"""
                             if row["Pref_Spiritual"]: prefs_list.append("Spiritual")
                             
                             # Determine plan name - use Name column if available, otherwise use batch import
-                            plan_name = row.get("Name", f"Batch Import {idx+1}")
+                            plan_name = row.get("Name", f"Batch Import {row_num + 1}")
                             if pd.isna(plan_name) or plan_name == "":
-                                plan_name = f"Batch Import {idx+1}"
+                                plan_name = f"Batch Import {row_num + 1}"
                             
                             # Save to database
                             db_manager.save_prediction(
@@ -429,7 +429,7 @@ David Wilson,28,1,0,9,Male,High,1,1,0,1"""
                             saved_count += 1
                             
                         except Exception as row_error:
-                            st.warning(f"Error processing row {idx+1}: {row_error}")
+                            st.warning(f"Error processing row {row_num + 1}: {row_error}")
                             continue
                     
                     st.success(f"Successfully processed and saved {saved_count} predictions to history!")
@@ -538,7 +538,7 @@ with st.expander("Explore Trained Model Artifacts"):
 st.markdown("---")
 st.markdown(
     f'<p style="text-align: center; color: grey; font-size: 0.8rem;">'
-    f'TravelMind AI · Built with Streamlit & Trained joblib artifacts · Matching across {len(le.classes_)} Classes'
+    f'TravelMind AI · Built with Streamlit & Trained joblib artifacts · Matching across {len(le.classes_) if le is not None else 25} Classes'
     '</p>', 
     unsafe_allow_html=True
 )
