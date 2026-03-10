@@ -279,28 +279,7 @@ with main_tabs[0]:
             if "prob_dict" not in st.session_state:
                 st.info("Input traveler profile details in the sidebar and click **Predict Ideal Destination**.")
             else:
-                prob_dict = st.session_state["prob_dict"]
-                pred_name = max(prob_dict, key=prob_dict.get)
-                pred_pct  = prob_dict[pred_name] * 100
-
-                dest_svg = icon("map-pin", size=56, color="white", stroke_width=1.2)
-                bg_img = DEST_IMAGES.get(pred_name, "")
-                bg_style = (
-                    f"background:linear-gradient(rgba(0,0,0,0.45),rgba(0,0,0,0.55)), url('{bg_img}') center/cover no-repeat;"
-                    if bg_img else
-                    "background:linear-gradient(135deg,var(--terra) 0%,#A0522D 100%);"
-                )
-
-                st.markdown(f"""
-                <div class="pred-box" style="{bg_style}">
-                  <div class="dest-icon">{dest_svg}</div>
-                  <div class="dest-name">{pred_name}</div>
-                  <div class="conf-label">Predicted Destination Class</div>
-                  <div class="conf-pct">{pred_pct:.1f}% Match Confidence</div>
-                  <div style="margin-top:1rem; font-size:0.8rem; opacity:0.9;">
-                    Result derived from trained label encoder classes.
-                  </div>
-                </div>""", unsafe_allow_html=True)
+                st.caption("Showing most recent prediction from joblib artifacts.")
 
     with col_probs:
         st.markdown('<div class="section-head">Likely Travel Destinations</div>', unsafe_allow_html=True)
