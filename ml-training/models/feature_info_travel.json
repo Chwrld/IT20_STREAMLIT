@@ -1,0 +1,120 @@
+{
+    "all_features": [
+        "Age",
+        "NumberOfAdults",
+        "NumberOfChildren",
+        "TravelMonth",
+        "Avg_Dest_Rating",
+        "Review_Count",
+        "Preference_Match_Score",
+        "Family_Size",
+        "Budget_Score",
+        "Gender",
+        "Budget",
+        "Pref_Relaxation",
+        "Pref_Adventure",
+        "Pref_Culture",
+        "Pref_Spiritual",
+        "TravelSeason",
+        "Age_Group",
+        "Has_Children",
+        "Seasonal_Match"
+    ],
+    "categorical_features": [
+        "Gender",
+        "Budget",
+        "Pref_Relaxation",
+        "Pref_Adventure",
+        "Pref_Culture",
+        "Pref_Spiritual",
+        "TravelSeason",
+        "Age_Group",
+        "Has_Children",
+        "Seasonal_Match"
+    ],
+    "numeric_features": [
+        "Age",
+        "NumberOfAdults",
+        "NumberOfChildren",
+        "TravelMonth",
+        "Avg_Dest_Rating",
+        "Review_Count",
+        "Preference_Match_Score",
+        "Family_Size",
+        "Budget_Score"
+    ],
+    "categorical_values": {
+        "Gender": [
+            "Female",
+            "Male"
+        ],
+        "Budget": [
+            "High",
+            "Low",
+            "Medium"
+        ],
+        "Pref_Relaxation": [
+            0,
+            1
+        ],
+        "Pref_Adventure": [
+            0,
+            1
+        ],
+        "Pref_Culture": [
+            0
+        ],
+        "Pref_Spiritual": [
+            0,
+            1
+        ],
+        "TravelSeason": [
+            "Fall",
+            "Spring",
+            "Summer",
+            "Winter"
+        ],
+        "Age_Group": [
+            "Adult",
+            "Elder",
+            "Middle",
+            "Senior",
+            "Young"
+        ],
+        "Has_Children": [
+            0,
+            1
+        ],
+        "Seasonal_Match": [
+            0,
+            1
+        ]
+    },
+    "target_classes": [
+        "Agra",
+        "Amritsar",
+        "Andaman & Nicobar",
+        "Auroville",
+        "Bodh Gaya",
+        "Delhi",
+        "Dharamshala",
+        "Goa",
+        "Gokarna",
+        "Hampi",
+        "Hyderabad",
+        "Jaipur",
+        "Jim Corbett",
+        "Kochi",
+        "Kolkata",
+        "Leh Ladakh",
+        "Lucknow",
+        "Manali",
+        "Munnar",
+        "Mysore",
+        "Pondicherry",
+        "Rishikesh",
+        "Tirupati",
+        "Varanasi",
+        "Varkala"
+    ]
+}
