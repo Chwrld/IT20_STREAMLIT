@@ -8,6 +8,9 @@ import time
 import warnings
 from pathlib import Path
 
+# Add streamlit-app directory to path so its modules resolve
+sys.path.insert(0, str(Path(__file__).parent / "streamlit-app"))
+
 from database import db_manager
 from model_loader import load_artifacts, get_feature_info, get_accuracy, predict_from_dict, get_label_encoder, get_model, preprocess_dataframe
 from schemas import PredictionInput, PredictionResult, FeatureInfo
