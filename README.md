@@ -59,7 +59,7 @@ graph TD
 ### 1. **Single Prediction** (Place Suggestions Tab)
 - Enter traveler profile: Age, Gender, Budget, Travel Month
 - Select travel interests: Relaxation, Adventure, Heritage & Culture, Spiritual
-- Click "🚀 Predict Ideal Destination" to get top destination recommendation
+- Click "Predict Ideal Destination" to get top destination recommendation
 - Real-time validation shows which fields are complete
 - Displays confidence percentage and destination details
 

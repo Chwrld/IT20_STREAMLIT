@@ -8,9 +8,6 @@ import time
 import warnings
 from pathlib import Path
 
-# Ensure the streamlit-app directory is on the path so its modules resolve
-sys.path.insert(0, str(Path(__file__).parent / "streamlit-app"))
-
 from database import db_manager
 from model_loader import load_artifacts, get_feature_info, get_accuracy, predict_from_dict, get_label_encoder, get_model, preprocess_dataframe
 from schemas import PredictionInput, PredictionResult, FeatureInfo
@@ -74,7 +71,7 @@ section[data-testid="stSidebar"] .stNumberInput button svg { stroke:var(--deep) 
 section[data-testid="stSidebar"] .stNumberInput button:hover svg { stroke:white !important; }
 .hero-title { font-family:'Fredoka One', cursive; font-size:3rem; font-weight:700; color:var(--deep); line-height:1.1; margin-bottom:0; text-shadow: 2px 2px 4px rgba(201,125,78,0.3); }
 .hero-sub { font-size:1rem; color:#7a6a52; margin-top:0.25rem; margin-bottom:2rem; letter-spacing:0.04em; }
-.pred-box { background:linear-gradient(135deg,var(--terra) 0%,#A0522D 100%); color:white; border-radius:20px; padding:2.5rem; text-align:center; box-shadow:0 8px 32px rgba(201,125,78,0.35); }
+.pred-box { background:linear-gradient(135deg,var(--terra) 0%,#A0522D 100%); color:white; border-radius:20px; padding:2.5rem; text-align:center; box-shadow:0 8px 32px rgba(201,125,78,0.35); min-height:300px; display:flex; flex-direction:column; justify-content:center; background-size:cover; background-position:center; background-attachment:fixed; transition:all 0.3s ease; }
 .pred-box .dest-icon { display:flex; justify-content:center; margin-bottom:0.5rem; }
 .pred-box .dest-name { font-family:'Playfair Display',serif; font-size:2.4rem; font-weight:900; letter-spacing:0.02em; margin-top:0.5rem; }
 .pred-box .conf-label { font-size:0.8rem; letter-spacing:0.12em; text-transform:uppercase; opacity:0.75; margin-top:0.4rem; }
@@ -92,6 +89,9 @@ section[data-testid="stSidebar"] .stNumberInput button:hover svg { stroke:white 
 .stDataFrame { border-radius:12px; overflow:hidden; }
 .stButton > button { background:var(--terra) !important; color:white !important; border:none !important; border-radius:10px !important; font-weight:600 !important; letter-spacing:0.04em !important; padding:0.65rem 2rem !important; font-size:0.95rem !important; transition:opacity 0.2s !important; width:100% !important; }
 .stButton > button:hover { opacity:0.85 !important; }
+/* Expand sidebar width */
+[data-testid="stSidebar"] { width: 570px !important; min-width: 550px !important; }
+[data-testid="stSidebarContent"] { padding: 2rem 1.5rem; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -206,7 +206,7 @@ with st.sidebar:
     form_complete = all([age, gender, budget, travel_month is not None])
     
     st.caption(" • ".join(validation_status))
-    predict_btn = st.button("🚀 Predict Ideal Destination", type="primary", disabled=not form_complete)
+    predict_btn = st.button("Predict Ideal Destination", type="primary", disabled=not form_complete)
 
 
 # ── MAIN ──
