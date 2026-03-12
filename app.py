@@ -92,8 +92,8 @@ section[data-testid="stSidebar"] .stNumberInput button:hover svg { stroke:white 
 .stDataFrame { border-radius:12px; overflow:hidden; }
 .stButton > button { background:var(--terra) !important; color:white !important; border:none !important; border-radius:10px !important; font-weight:600 !important; letter-spacing:0.04em !important; padding:0.65rem 2rem !important; font-size:0.95rem !important; transition:opacity 0.2s !important; width:100% !important; }
 .stButton > button:hover { opacity:0.85 !important; }
-/* Expand sidebar width */
-[data-testid="stSidebar"] { width: 570px !important; min-width: 550px !important; }
+/* Expand sidebar width - allows retraction */
+[data-testid="stSidebar"] { width: 570px !important; }
 [data-testid="stSidebarContent"] { padding: 2rem 1.5rem; }
 </style>
 """, unsafe_allow_html=True)
