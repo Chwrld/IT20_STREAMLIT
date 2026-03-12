@@ -269,26 +269,10 @@ with main_tabs[0]:
                 pred_name = max(prob_dict, key=lambda k: prob_dict[k])
                 pred_pct  = prob_dict[pred_name] * 100
 
-                dest_svg = icon("map-pin", size=56, color="white", stroke_width=1.2)
-                bg_img = DEST_IMAGES.get(pred_name, "")
-                bg_style = (
-                    f"background:linear-gradient(rgba(0,0,0,0.45),rgba(0,0,0,0.55)), url('{bg_img}') center/cover no-repeat;"
-                    if bg_img else
-                    "background:linear-gradient(135deg,var(--terra) 0%,#A0522D 100%);"
-                )
-
-                st.markdown(f"""
-                <div class="pred-box" style="{bg_style}">
-                  <div class="dest-icon">{dest_svg}</div>
-                  <div class="dest-name">{pred_name}</div>
-                  <div class="conf-label">Predicted Destination Class</div>
-                  <div class="conf-pct">{pred_pct:.1f}% Match Confidence</div>
-                  <div style="margin-top:1rem; font-size:0.8rem; opacity:0.9;">
-                    Result derived from trained label encoder classes.
-                  </div>
-                </div>""", unsafe_allow_html=True)
-
+                # Save to session state IMMEDIATELY to persist across rerenders
                 st.session_state["prob_dict"] = prob_dict
+                st.session_state["pred_name"] = pred_name
+                st.session_state["pred_pct"] = pred_pct
                 
                 # Save to SQLite Database
                 db_manager.save_prediction(
@@ -305,12 +289,39 @@ with main_tabs[0]:
                 )
             except Exception as e:
                 st.error(f"Execution Error: {e}")
+        
+        # Display prediction from session state (persists on rerenders)
+        if "prob_dict" in st.session_state:
+            prob_dict = st.session_state["prob_dict"]
+            pred_name = st.session_state["pred_name"]
+            pred_pct = st.session_state["pred_pct"]
             
-        else:
-            if "prob_dict" not in st.session_state:
-                st.info("Input traveler profile details in the sidebar and click **Predict Ideal Destination**.")
+            dest_svg = icon("map-pin", size=56, color="white", stroke_width=1.2)
+            bg_img = DEST_IMAGES.get(pred_name, "")
+            
+            if bg_img:
+                # Use inline style with better image handling
+                st.markdown(f"""
+                <div class="pred-box" style="background-image:linear-gradient(rgba(0,0,0,0.45),rgba(0,0,0,0.55)), url('{bg_img}'); background-size:cover; background-position:center; background-repeat:no-repeat;">
+                  <div class="dest-icon">{dest_svg}</div>
+                  <div class="dest-name">{pred_name}</div>
+                  <div class="conf-label">Predicted Destination Class</div>
+                  <div class="conf-pct">{pred_pct:.1f}% Match Confidence</div>
+                  <div style="margin-top:1rem; font-size:0.8rem; opacity:0.9;">
+                    Result derived from trained label encoder classes.
+                  </div>
+                </div>""", unsafe_allow_html=True)
             else:
-                st.caption("Showing most recent prediction from joblib artifacts.")
+                st.markdown(f"""
+                <div class="pred-box" style="background:linear-gradient(135deg,var(--terra) 0%,#A0522D 100%);">
+                  <div class="dest-icon">{dest_svg}</div>
+                  <div class="dest-name">{pred_name}</div>
+                  <div class="conf-label">Predicted Destination Class</div>
+                  <div class="conf-pct">{pred_pct:.1f}% Match Confidence</div>
+                  <div style="margin-top:1rem; font-size:0.8rem; opacity:0.9;">
+                    Result derived from trained label encoder classes.
+                  </div>
+                </div>""", unsafe_allow_html=True)
 
     with col_probs:
         st.markdown('<div class="section-head">Likely Travel Destinations</div>', unsafe_allow_html=True)
