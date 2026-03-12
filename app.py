@@ -141,8 +141,9 @@ with st.sidebar:
     age_raw = st.text_input("Current Age", placeholder="e.g. 30", value="")
     age = int(age_raw) if age_raw.strip().isdigit() and 18 <= int(age_raw) <= 100 else None
     
-    gender_options = [""] + feature_info.categorical_values["Gender"] + ["Other"]
+    gender_options = ["🔹 Select Gender"] + feature_info.categorical_values["Gender"] + ["Other"]
     gender = st.selectbox("Gender Identity", gender_options, index=0)
+    gender = None if gender == "🔹 Select Gender" else gender
     
     col_a, col_c = st.columns(2)
     with col_a:
@@ -155,13 +156,15 @@ with st.sidebar:
     <div class="sidebar-section-label">{icon("plane",size=14,color="#C97D4E")} Trip Details</div>
     """, unsafe_allow_html=True)
 
-    budget_options = [""] + sorted(feature_info.categorical_values["Budget"])
+    budget_options = ["🔹 Select Budget"] + sorted(feature_info.categorical_values["Budget"])
     budget = st.selectbox("Travel Budget", budget_options, index=0)
+    budget = None if budget == "🔹 Select Budget" else budget
     
     months = ["January", "February", "March", "April", "May", "June", 
               "July", "August", "September", "October", "November", "December"]
-    selected_month = st.selectbox("Travel Month", [""] + months, index=0)
-    travel_month = months.index(selected_month) if selected_month else None
+    selected_month = st.selectbox("Travel Month", ["🔹 Select Month"] + months, index=0)
+    selected_month = None if selected_month == "🔹 Select Month" else selected_month
+    travel_month = months.index(selected_month) + 1 if selected_month else None
 
     st.markdown('<div class="sidebar-section-label">Travel Interests</div>', unsafe_allow_html=True)
     
@@ -177,7 +180,33 @@ with st.sidebar:
     if pref_spirit: selected_prefs.append("Spiritual")
 
     st.markdown("<br/>", unsafe_allow_html=True)
-    predict_btn = st.button("Predict Ideal Destination", type="primary", disabled=not all([age, gender, budget, travel_month]))
+    
+    # Show validation status
+    validation_status = []
+    if not age:
+        validation_status.append("❌ Age (18-100 required)")
+    else:
+        validation_status.append(f"✅ Age: {age}")
+    
+    if not gender:
+        validation_status.append("❌ Gender required")
+    else:
+        validation_status.append(f"✅ Gender: {gender}")
+    
+    if not budget:
+        validation_status.append("❌ Budget required")
+    else:
+        validation_status.append(f"✅ Budget: {budget}")
+    
+    if travel_month is None:
+        validation_status.append("❌ Month required")
+    else:
+        validation_status.append(f"✅ Month: {selected_month}")
+    
+    form_complete = all([age, gender, budget, travel_month is not None])
+    
+    st.caption(" • ".join(validation_status))
+    predict_btn = st.button("🚀 Predict Ideal Destination", type="primary", disabled=not form_complete)
 
 
 # ── MAIN ──
