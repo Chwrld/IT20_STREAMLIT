@@ -2,7 +2,6 @@ import json
 from pathlib import Path
 import joblib
 import pandas as pd
-import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 MODEL_PATH = ROOT / "ml-training" / "models" / "optimized_random_forest_travel.pkl"
@@ -44,12 +43,26 @@ def get_feature_info():
 
 
 def get_accuracy():
+    global _results_dict
     load_artifacts()
+    if _results_dict is None:
+        return 76.2
     return _results_dict.get('Optimized Random Forest', {}).get('Accuracy', 0.762) * 100
 
 
 def predict_from_dict(input_dict: dict) -> dict:
+    global _model, _le, _feature_info
+    
+    # Ensure all artifacts are loaded
     load_artifacts()
+    
+    # Verify artifacts are loaded
+    if _model is None:
+        raise RuntimeError("Model failed to load from " + str(MODEL_PATH))
+    if _le is None:
+        raise RuntimeError("Label encoder failed to load from " + str(LABEL_ENCODER_PATH))
+    if _feature_info is None:
+        raise RuntimeError("Feature info failed to load from " + str(FEATURE_INFO_PATH))
     
     # Create DataFrame from input
     input_df = pd.DataFrame([input_dict])
@@ -113,6 +126,16 @@ def preprocess_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     
     budget_map = {'Low': 1, 'Medium': 2, 'High': 3}
     df['Budget_Score'] = df['Budget'].map(budget_map)
+    
+    # Ensure preference columns exist
+    if 'Pref_Relaxation' not in df.columns:
+        df['Pref_Relaxation'] = 0
+    if 'Pref_Adventure' not in df.columns:
+        df['Pref_Adventure'] = 0
+    if 'Pref_Culture' not in df.columns:
+        df['Pref_Culture'] = 0
+    if 'Pref_Spiritual' not in df.columns:
+        df['Pref_Spiritual'] = 0
     
     df['Preference_Match_Score'] = 0  # Simplified
     df['Avg_Dest_Rating'] = 4.5  # Default
